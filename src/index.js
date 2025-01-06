@@ -1,7 +1,7 @@
+import "babel-polyfill";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
-import { validateIp } from "./helpers";
-import { addTileLayer } from "./helpers";
+import { validateIp, addTileLayer, getAddress } from "./helpers";
 import icon from "../images/icon-location.svg";
 
 const ipInput = document.querySelector(".search-bar__input");
@@ -25,17 +25,14 @@ const mapArea = document.querySelector(".map");
 const map = L.map(mapArea, {
   center: [51.505, -0.09],
   zoom: 13,
+  zoomControl: false,
 });
 addTileLayer(map);
 L.marker([51.505, -0.09], { icon: markerIcon }).addTo(map);
 
 function getData() {
   if (validateIp(ipInput.value)) {
-    fetch(
-      `https://geo.ipify.org/api/v2/country?apiKey=at_GmBLQD3OaLBs27ao2Gqd88eAUwbWu&ipAddress=${ipInput.value}`
-    )
-      .then((response) => response.json())
-      .then((data) => setInfo(data));
+    getAddress(ipInput.value).then(setInfo);
   }
 }
 
@@ -46,12 +43,16 @@ function handleKey(e) {
 }
 
 function setInfo(mapData) {
+  const { lat, lng, country, region, timezone } = mapData.location;
   console.log(mapData);
+
   ipInfo.innerText = mapData.ip;
-  locationInfo.innerText =
-    mapData.location.country + " " + mapData.location.region;
-  timezoneInfo.innerText = mapData.location.timezone;
+  locationInfo.innerText = country + " " + region;
+  timezoneInfo.innerText = timezone;
   ispInfo.innerText = mapData.isp;
+
+  map.setView([lat, lng]);
+  L.marker([lat, lng], { icon: markerIcon }).addTo(map);
 }
 
 // L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
