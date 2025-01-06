@@ -1,7 +1,13 @@
 import "babel-polyfill";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
-import { addOffset, validateIp, addTileLayer, getAddress } from "./helpers";
+import {
+  addOffset,
+  validateIp,
+  addTileLayer,
+  getAddress,
+  getIp,
+} from "./helpers";
 import icon from "../images/icon-location.svg";
 
 const ipInput = document.querySelector(".search-bar__input");
@@ -54,15 +60,17 @@ function setInfo(mapData) {
   map.setView([lat, lng]);
   L.marker([lat, lng], { icon: markerIcon }).addTo(map);
 
-  if(matchMedia('(max-width: 1023px)').matches) {
+  if (matchMedia("(max-width: 1023px)").matches) {
     addOffset(map);
   }
-
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-    getAddress('102.22.22.1').then(setInfo)
-})
-// L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-//     maxZoom: 19,
-//     attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>' }).addTo(map);
+document.addEventListener("DOMContentLoaded", async () => {
+  try {
+    const ip = await getIp(); // Получаем IP
+    const mapData = await getAddress(ip); // Используем IP для получения информации
+    setInfo(mapData); // Обновляем интерфейс
+  } catch (error) {
+    console.error("Ошибка при получении данных:", error);
+  }
+});
