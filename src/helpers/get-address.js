@@ -4,3 +4,9 @@ export async function getAddress(ip = "8.8.8.8") {
     );
     return await response.json();
   }
+
+  export async function getIp() {
+    const response = await fetch('https://api.ipify.org?format=json');
+    const data = await response.json();
+    return data.ip;
+  }
